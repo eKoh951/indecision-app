@@ -2,18 +2,24 @@ class IndecisionApp extends React.Component{
 	constructor(props) {
 		super(props)
 		this.handleDeleteOptions = this.handleDeleteOptions.bind(this)
+		this.handleDeleteOption = this.handleDeleteOption.bind(this)
 		this.handlePick = this.handlePick.bind(this)
 		this.handleAddOption = this.handleAddOption.bind(this)
 		this.state = {
-			options: []
+			options: props.options
 		}
 	}
 	handleDeleteOptions(){
-		this.setState(() =>{
-			return {
-				options: []
-			}
-		})
+		// When we wrap up an {} with () like this ({}) on an arrow function
+		//   we mean to return a empy object
+		// On the following we mean to return an object with a property Options
+		//   that has an empty array
+		this.setState(() =>	( {options: []} ))
+	}
+	handleDeleteOption(optionToRemove) {
+		this.setState((prevState) => ({
+			options: prevState.options.filter((option) => optionToRemove !== option)
+		}))
 	}
 	handlePick(){
 		const randomNum = Math.floor(Math.random() * this.state.options.length)
@@ -31,23 +37,19 @@ class IndecisionApp extends React.Component{
 			return 'This option already exists.'
 		}
 
-		this.setState((prevState) => {
-			return {
-				// Invalid because we cannot work on prevState
-				// options: prevState.options.push(option)
-				// Rather we use concat() array method to write over options
-				//   instead of prevState
+			// Invalid because it returns the length of the new array
+			// options: prevState.options.push(option)
+			// Rather we use concat() array method to write over options
+			//   since it returns a new array
+			this.setState((prevState) => ({
 				options: prevState.options.concat(option)
-			}
-		})
+			}))
 	}
 	render(){
-		const title = 'Indecision'
 		const subtitle = 'Put your life in the hands of a computer'
 		return (
 			<div>
 				<Header
-					title={title}
 					subtitle={subtitle}
 				/>
 				<Action
@@ -57,6 +59,7 @@ class IndecisionApp extends React.Component{
 				<Options
 					options={this.state.options}
 					handleDeleteOptions={this.handleDeleteOptions}
+					handleDeleteOption={this.handleDeleteOption}
 				/>
 				<AddOption
 					handleAddOption={this.handleAddOption}
@@ -65,14 +68,25 @@ class IndecisionApp extends React.Component{
 		)
 	}
 }
-// Creating a component
+
+IndecisionApp.defaultProps = {
+	options: []
+}
+
+// Creating a functional stateless component
 const Header = (props) => {
 	return (
 		<div>
 			<h1>{props.title}</h1>
-			<h2>{props.subtitle}</h2>
+			{props.subtitle &&
+				<h2>{props.subtitle}</h2>
+			}
 		</div>
 	)
+}
+
+Header.defaultProps = {
+	title: 'Indecision App'
 }
 
 const Action = (props) => {
@@ -94,7 +108,14 @@ const Options = (props) => {
 		<div>
 			{/*Bind.this is expensive here, because it would be inside render function*/}
 			<button onClick={props.handleDeleteOptions}>Remove All</button>
-			{options.map((option) => <Option key={option} optionText={option}/>)}
+			{options.map((option) => (
+					<Option
+						key={option}
+						optionText={option}
+						handleDeleteOption={props.handleDeleteOption}
+					/>
+				))
+			}
 		</div>
 	)
 }
@@ -102,7 +123,17 @@ const Options = (props) => {
 const Option = (props) => {
 	return (
 		<div>
-			Option: {props.optionText}
+			{props.optionText}
+			<button
+				// When we wrap a method call with a function
+				//  it does not trigger as the page loads
+				//  instead it triggers as usual
+				onClick={(e) => {
+					props.handleDeleteOption(props.optionText)
+				}}
+			>
+				Remove
+			</button>
 		</div>
 	)
 }
@@ -122,9 +153,7 @@ class AddOption extends React.Component {
 		const error = this.props.handleAddOption(option)
 		
 		// Manipulate component state
-		this.setState(() => {
-			return { error }
-		})
+		this.setState(() => ({ error }) )
 	}
 	render(){
 		return(
@@ -139,4 +168,14 @@ class AddOption extends React.Component {
 	}
 }
 
-ReactDOM.render(<IndecisionApp />, document.getElementById('app'))
+ReactDOM.render(
+	<IndecisionApp
+		options={
+				[
+					'thing1',
+					'thing2'
+				]
+		}
+	/>,
+	document.getElementById('app')
+)

@@ -6,7 +6,7 @@ class Counter extends React.Component {
 		this.handleReset = this.handleReset.bind(this)
 		//1. Create default state object
 		this.state = {
-			count: 0,
+			count: props.count,
 			name: 'Erick'
 		}
 	}
@@ -45,6 +45,10 @@ class Counter extends React.Component {
 			</div>
 		)
 	}
+}
+
+Counter.defaultProps = {
+	count: 0
 }
 
 ReactDOM.render(<Counter />, document.getElementById('app'))

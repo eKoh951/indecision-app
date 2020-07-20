@@ -17,10 +17,11 @@ var IndecisionApp = function (_React$Component) {
 		var _this = _possibleConstructorReturn(this, (IndecisionApp.__proto__ || Object.getPrototypeOf(IndecisionApp)).call(this, props));
 
 		_this.handleDeleteOptions = _this.handleDeleteOptions.bind(_this);
+		_this.handleDeleteOption = _this.handleDeleteOption.bind(_this);
 		_this.handlePick = _this.handlePick.bind(_this);
 		_this.handleAddOption = _this.handleAddOption.bind(_this);
 		_this.state = {
-			options: []
+			options: props.options
 		};
 		return _this;
 	}
@@ -28,9 +29,22 @@ var IndecisionApp = function (_React$Component) {
 	_createClass(IndecisionApp, [{
 		key: 'handleDeleteOptions',
 		value: function handleDeleteOptions() {
+			// When we wrap up an {} with () like this ({}) on an arrow function
+			//   we mean to return a empy object
+			// On the following we mean to return an object with a property Options
+			//   that has an empty array
 			this.setState(function () {
+				return { options: [] };
+			});
+		}
+	}, {
+		key: 'handleDeleteOption',
+		value: function handleDeleteOption(optionToRemove) {
+			this.setState(function (prevState) {
 				return {
-					options: []
+					options: prevState.options.filter(function (option) {
+						return optionToRemove !== option;
+					})
 				};
 			});
 		}
@@ -54,12 +68,12 @@ var IndecisionApp = function (_React$Component) {
 				return 'This option already exists.';
 			}
 
+			// Invalid because it returns the length of the new array
+			// options: prevState.options.push(option)
+			// Rather we use concat() array method to write over options
+			//   since it returns a new array
 			this.setState(function (prevState) {
 				return {
-					// Invalid because we cannot work on prevState
-					// options: prevState.options.push(option)
-					// Rather we use concat() array method to write over options
-					//   instead of prevState
 					options: prevState.options.concat(option)
 				};
 			});
@@ -67,13 +81,11 @@ var IndecisionApp = function (_React$Component) {
 	}, {
 		key: 'render',
 		value: function render() {
-			var title = 'Indecision';
 			var subtitle = 'Put your life in the hands of a computer';
 			return React.createElement(
 				'div',
 				null,
 				React.createElement(Header, {
-					title: title,
 					subtitle: subtitle
 				}),
 				React.createElement(Action, {
@@ -82,7 +94,8 @@ var IndecisionApp = function (_React$Component) {
 				}),
 				React.createElement(Options, {
 					options: this.state.options,
-					handleDeleteOptions: this.handleDeleteOptions
+					handleDeleteOptions: this.handleDeleteOptions,
+					handleDeleteOption: this.handleDeleteOption
 				}),
 				React.createElement(AddOption, {
 					handleAddOption: this.handleAddOption
@@ -93,10 +106,12 @@ var IndecisionApp = function (_React$Component) {
 
 	return IndecisionApp;
 }(React.Component);
-// Creating a component
 
+IndecisionApp.defaultProps = {
+	options: []
 
-var Header = function Header(props) {
+	// Creating a functional stateless component
+};var Header = function Header(props) {
 	return React.createElement(
 		'div',
 		null,
@@ -105,12 +120,16 @@ var Header = function Header(props) {
 			null,
 			props.title
 		),
-		React.createElement(
+		props.subtitle && React.createElement(
 			'h2',
 			null,
 			props.subtitle
 		)
 	);
+};
+
+Header.defaultProps = {
+	title: 'Indecision App'
 };
 
 var Action = function Action(props) {
@@ -139,7 +158,11 @@ var Options = function Options(props) {
 			'Remove All'
 		),
 		options.map(function (option) {
-			return React.createElement(Option, { key: option, optionText: option });
+			return React.createElement(Option, {
+				key: option,
+				optionText: option,
+				handleDeleteOption: props.handleDeleteOption
+			});
 		})
 	);
 };
@@ -148,8 +171,19 @@ var Option = function Option(props) {
 	return React.createElement(
 		'div',
 		null,
-		'Option: ',
-		props.optionText
+		props.optionText,
+		React.createElement(
+			'button',
+			{
+				// When we wrap a method call with a function
+				//  it does not trigger as the page loads
+				//  instead it triggers as usual
+				onClick: function onClick(e) {
+					props.handleDeleteOption(props.optionText);
+				}
+			},
+			'Remove'
+		)
 	);
 };
 
@@ -209,4 +243,6 @@ var AddOption = function (_React$Component2) {
 	return AddOption;
 }(React.Component);
 
-ReactDOM.render(React.createElement(IndecisionApp, null), document.getElementById('app'));
+ReactDOM.render(React.createElement(IndecisionApp, {
+	options: ['thing1', 'thing2']
+}), document.getElementById('app'));
